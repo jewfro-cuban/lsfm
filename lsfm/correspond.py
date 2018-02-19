@@ -36,13 +36,13 @@ def generate_data_weights_per_iter(template, nosetip, r_width, w_min_iter,
 
 
 @lru_cache()
-def data_weights():
+def data_weights(template_fn=None):
     w_max_iter = 0.5
     w_min_iter = 0.0
     r_width = 0.5 * 0.84716526594210229
     r_mid = 0.95 * 0.84716526594210229
     y_pen = 1.7
-    template = load_template()
+    template = load_template(template_fn)
     return generate_data_weights_per_iter(template,
                                           template.landmarks['nosetip'],
                                           r_width=r_width,
@@ -53,8 +53,8 @@ def data_weights():
                                           )
 
 
-def correspond_mesh(mesh, mask=None, verbose=False):
-    template = load_template().copy()
+def correspond_mesh(mesh, mask=None, template_fn=None, verbose=False):
+    template = load_template(template_fn).copy()
     if mask is not None:
         template.landmarks['__lsfm_masked'] = template.landmarks[
             '__lsfm'].from_mask(mask)
@@ -68,5 +68,5 @@ def correspond_mesh(mesh, mask=None, verbose=False):
     else:
         group = '__lsfm'
     aligned = non_rigid_icp(template, mesh, landmark_group=group,
-                            data_weights=data_weights(), verbose=verbose)
+                            data_weights=data_weights(template_fn), verbose=verbose)
     return aligned

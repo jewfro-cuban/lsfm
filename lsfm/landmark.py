@@ -1,6 +1,6 @@
 from functools import lru_cache
 from menpo.shape import PointCloud
-from menpo.transform import Scale, Translation
+from menpo.transform import Scale, Translation, Rotation
 from menpo3d.rasterize import (
     rasterize_barycentric_coordinate_images,
     rasterize_mesh_from_barycentric_coordinate_images,
@@ -26,16 +26,17 @@ def align_mesh_to_template(source, target, scale_corrective=1.2):
     scale = Scale((target.norm() / source.norm()) * scale_corrective,
                   n_dims=target.n_dims)
     translation = Translation(target.centre() - source.centre())
-    return translation.compose_before(scale)
+    rotation = Rotation.init_from_3d_ccw_angle_around_x(-45)
+    return rotation.compose_before(translation.compose_before(scale))
 
 
-def landmark_mesh(mesh, img_shape=(320, 240), verbose=False):
+def landmark_mesh(mesh, img_shape=(320, 240), verbose=False, template_fn=None):
     fitter = load_balanced_frontal_face_fitter()
     detector = load_dlib_frontal_face_detector()
     camera = perspective_camera_for_template(img_shape)
 
     # Pre-process - align the mesh roughly with the template
-    aligned_mesh = align_mesh_to_template(mesh, load_template()).apply(mesh)
+    aligned_mesh = align_mesh_to_template(mesh, load_template(template_fn)).apply(mesh)
 
     mesh_in_img = camera.apply(aligned_mesh)
 

@@ -11,11 +11,11 @@ from .shading import lambertian_shading
 from matplotlib import pyplot as plt
 
 
-def rasterize_mesh_at_template(mesh, img_shape=(640, 480),
-                               pose_angle_deg=0, shaded=False):
+def rasterize_mesh_at_template(mesh, img_shape=(640, 480), 
+                               pose_angle_deg=0, shaded=False, template_fn=None):
     camera = perspective_camera_for_template(img_shape,
                                              pose_angle_deg=pose_angle_deg)
-    mesh_aligned = AlignmentSimilarity(mesh, load_template()).apply(mesh)
+    mesh_aligned = AlignmentSimilarity(mesh, load_template(template_fn)).apply(mesh)
 
     if shaded:
         mesh_aligned = lambertian_shading(mesh_aligned)
@@ -53,9 +53,9 @@ def visualize_pruning(w_norm, n_retained,
              'r-', lw=1, alpha=0.6, label='chi2 pdf')
 
 
-def visualize_nicp_result(mesh):
+def visualize_nicp_result(mesh, template_fn=None):
 
-    l = rasterize_mesh_at_template(mesh, pose_angle_deg=+20, shaded=True)
-    r = rasterize_mesh_at_template(mesh, pose_angle_deg=-20, shaded=True)
+    l = rasterize_mesh_at_template(mesh, pose_angle_deg=+20, shaded=True, template_fn=template_fn)
+    r = rasterize_mesh_at_template(mesh, pose_angle_deg=-20, shaded=True, template_fn=template_fn)
 
     return Image(np.concatenate([l.pixels, r.pixels], axis=-1))
